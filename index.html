@@ -32,6 +32,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Poppins:wght@400;600;700&family=Raleway:wght@400;600;700&display=swap"
     rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
 
   <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
@@ -42,6 +44,29 @@
 
   <!-- Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet" />
+
+  <!-- Pendulum Simulation Assets -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+      #pendulumOverlay {
+        font-family: 'Inter', sans-serif; /* Match pendulum font */
+      }
+      #pendulumOverlay input[type="range"] {
+          -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px;
+          background: rgba(255, 255, 255, 0.2); outline: none; transition: opacity .2s;
+      }
+      #pendulumOverlay input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%;
+          background: #ffffff; cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      }
+      #pendulumOverlay input[type="range"]::-moz-range-thumb {
+          width: 20px; height: 20px; border-radius: 50%; background: #ffffff;
+          cursor: pointer; border: none; box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      }
+      #pendulumOverlay .control-panel {
+          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      }
+  </style>
 
   <!-- Template Info -->
   <!-- 
@@ -82,6 +107,7 @@
       <ul>
         <li><a href="#about"><i class="bi bi-person navicon"></i> About</a></li>
         <li><a href="#resume"><i class="bi bi-file-earmark-text navicon"></i> Resume</a></li>
+        <li><a href="#pendulum"><i class="bi bi-dpad-fill navicon"></i> Demo</a></li>
         <li><a href="#services"><i class="bi bi-chat-left-text navicon"></i> Chat</a></li>
         <li><a href="#contact"><i class="bi bi-envelope navicon"></i> Contact</a></li>
       </ul>
@@ -371,6 +397,17 @@
         </section>
         <!-- /Resume Section -->
 
+        <!-- Pendulum Section -->
+        <section id="pendulum" class="pendulum section">
+          <div class="container section-title" data-aos="fade-up">
+            <h2>Interactive Demo</h2>
+            <p>A real-time simulation of a double pendulum, a classic example of chaotic motion. Even a tiny change in the starting position leads to a wildly different outcome. Click to launch the full-screen simulation, and drag the bobs to see the butterfly effect in action.</p>
+          </div>
+          <div class="container text-center" data-aos="fade-up" data-aos-delay="100">
+            <button id="launchPendulumBtn" style="font-family: 'Raleway', sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 1px; display: inline-block; padding: 12px 32px; border-radius: 50px; transition: 0.5s; color: #fff; background: #0d6efd; border: none;">Launch Simulation</button>
+          </div>
+        </section>
+        <!-- /Pendulum Section -->
 
 
  		<!-- iPhone-Style Chatbot Section with Typing Animation -->
@@ -701,6 +738,70 @@
 </section><!-- /Contact Section -->
 
 
+    <!-- =======================================================
+         PENDULUM SIMULATION OVERLAY HTML
+    ======================================================== -->
+    <div id="pendulumOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgb(17 24 39); z-index: 9999; display: none; opacity: 0; transition: opacity 0.4s ease; touch-action: none;">
+        
+        <canvas id="pendulumCanvas" style="position: absolute; top: 0; left: 0;"></canvas>
+
+        <button id="closePendulumBtn" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; line-height: 44px; text-align: center; cursor: pointer; z-index: 10; transition: background 0.3s ease;">&times;</button>
+
+        <!-- Control Panel -->
+        <div id="controls" class="control-panel absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-gray-800 bg-opacity-50 p-6 rounded-2xl shadow-lg border border-gray-700">
+            <h1 class="text-xl font-bold text-center mb-1 text-white">Double Pendulum Controls</h1>
+            <p class="text-xs text-gray-400 text-center mb-4">Click and drag the circles to set a new start point.</p>
+            
+            <div class="space-y-4">
+                <!-- Gravity -->
+                <div>
+                    <label for="gravity" class="flex justify-between text-sm font-medium text-gray-300">
+                        <span>Gravity</span>
+                        <span id="gravityValue">1.00</span>
+                    </label>
+                    <input type="range" id="gravity" min="0.1" max="5" value="1" step="0.01" class="mt-1">
+                </div>
+
+                <!-- Mass 1 -->
+                <div>
+                    <label for="mass1" class="flex justify-between text-sm font-medium text-gray-300">
+                        <span>Mass 1</span>
+                        <span id="mass1Value">20</span>
+                    </label>
+                    <input type="range" id="mass1" min="5" max="50" value="20" step="1" class="mt-1">
+                </div>
+                
+                <!-- Mass 2 -->
+                <div>
+                    <label for="mass2" class="flex justify-between text-sm font-medium text-gray-300">
+                        <span>Mass 2</span>
+                        <span id="mass2Value">20</span>
+                    </label>
+                    <input type="range" id="mass2" min="5" max="50" value="20" step="1" class="mt-1">
+                </div>
+
+                <!-- Trail Length -->
+                <div>
+                    <label for="trail" class="flex justify-between text-sm font-medium text-gray-300">
+                        <span>Trail Length</span>
+                        <span id="trailValue">300</span>
+                    </label>
+                    <input type="range" id="trail" min="50" max="1000" value="300" step="10" class="mt-1">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button id="resetButton" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        Reset
+                    </button>
+                    <button id="butterflyButton" class="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400">
+                        Butterfly
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
   </main>
 
@@ -785,6 +886,332 @@
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <!-- PENDULUM SIMULATION SCRIPT -->
+  <script>
+    (function() {
+      // Wrapper to prevent conflicts with other scripts
+
+      // --- Overlay Setup ---
+      const pendulumOverlay = document.getElementById('pendulumOverlay');
+      const launchBtn = document.getElementById('launchPendulumBtn');
+      const closeBtn = document.getElementById('closePendulumBtn');
+
+      if (!pendulumOverlay || !launchBtn || !closeBtn) {
+        console.error('Pendulum UI elements not found. Simulation cannot start.');
+        return;
+      }
+
+      let isSimulationActive = false;
+      let animationFrameId;
+
+      launchBtn.addEventListener('click', () => {
+        pendulumOverlay.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling of portfolio page
+        setTimeout(() => { // Delay to allow display:block to render before transitioning opacity
+          pendulumOverlay.style.opacity = '1';
+        }, 10);
+        isSimulationActive = true;
+        setup();
+      });
+
+      closeBtn.addEventListener('click', () => {
+        pendulumOverlay.style.opacity = '0';
+        document.body.style.overflow = ''; // Restore scrolling
+        isSimulationActive = false;
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        setTimeout(() => { // Wait for opacity transition to finish before hiding
+          pendulumOverlay.style.display = 'none';
+        }, 400);
+      });
+
+      // --- Simulation Code (from double_pendulum.html) ---
+
+      const canvas = document.getElementById('pendulumCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // --- DOM Elements from Control Panel ---
+      const gravitySlider = document.getElementById('gravity');
+      const mass1Slider = document.getElementById('mass1');
+      const mass2Slider = document.getElementById('mass2');
+      const trailSlider = document.getElementById('trail');
+      const resetButton = document.getElementById('resetButton');
+      const butterflyButton = document.getElementById('butterflyButton');
+
+      const gravityValue = document.getElementById('gravityValue');
+      const mass1Value = document.getElementById('mass1Value');
+      const mass2Value = document.getElementById('mass2Value');
+      const trailValue = document.getElementById('trailValue');
+
+      // --- Physics Parameters ---
+      let pivotX, pivotY, r1, r2, m1, m2, a1, a2, a1_v = 0, a2_v = 0, g;
+
+      // --- Drawing & Interaction Parameters ---
+      let trail = [];
+      let maxTrailLength;
+      let isDragging = false;
+      let draggedBob = null;
+
+      function setup() {
+        if (!isSimulationActive) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        pivotX = canvas.width / 2;
+        pivotY = canvas.height / 2 - Math.min(canvas.width, canvas.height) * 0.2;
+        
+        r1 = Math.min(canvas.width, canvas.height) * 0.2;
+        r2 = Math.min(canvas.width, canvas.height) * 0.2;
+        
+        a1 = Math.PI / 2;
+        a2 = Math.PI / 1.5;
+
+        a1_v = 0;
+        a2_v = 0;
+        trail = [];
+        
+        isDragging = false;
+        draggedBob = null;
+        canvas.style.cursor = 'default';
+
+        updateParameters();
+
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        
+        animate();
+      }
+
+      function updateParameters() {
+        g = parseFloat(gravitySlider.value);
+        m1 = parseFloat(mass1Slider.value);
+        m2 = parseFloat(mass2Slider.value);
+        maxTrailLength = parseInt(trailSlider.value, 10);
+        
+        gravityValue.textContent = g.toFixed(2);
+        mass1Value.textContent = m1.toFixed(0);
+        mass2Value.textContent = m2.toFixed(0);
+        trailValue.textContent = maxTrailLength;
+      }
+
+      function animate() {
+        // Stop the loop if the simulation is no longer active
+        if (!isSimulationActive) {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            return;
+        }
+
+        // Only pause for dragging, then request the next frame
+        if (isDragging) {
+            animationFrameId = requestAnimationFrame(animate);
+            return;
+        }
+
+        const simulationSteps = 10;
+        for (let i = 0; i < simulationSteps; i++) {
+          let num1 = -g * (2 * m1 + m2) * Math.sin(a1);
+          let num2 = -m2 * g * Math.sin(a1 - 2 * a2);
+          let num3 = -2 * Math.sin(a1 - a2) * m2;
+          let num4 = a2_v * a2_v * r2 + a1_v * a1_v * r1 * Math.cos(a1 - a2);
+          let den = r1 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+          let a1_a = (num1 + num2 + num3 * num4) / den;
+
+          num1 = 2 * Math.sin(a1 - a2);
+          num2 = (a1_v * a1_v * r1 * (m1 + m2));
+          num3 = g * (m1 + m2) * Math.cos(a1);
+          num4 = a2_v * a2_v * r2 * m2 * Math.cos(a1 - a2);
+          den = r2 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+          let a2_a = (num1 * (num2 + num3 + num4)) / den;
+
+          a1_v += a1_a * 0.1;
+          a2_v += a2_a * 0.1;
+          a1 += a1_v * 0.1;
+          a2 += a2_v * 0.1;
+          
+          a1_v *= 0.999;
+          a2_v *= 0.999;
+
+          let x1_step = pivotX + r1 * Math.sin(a1);
+          let y1_step = pivotY + r1 * Math.cos(a1);
+          let x2_step = x1_step + r2 * Math.sin(a2);
+          let y2_step = y1_step + r2 * Math.cos(a2);
+          trail.push({ x: x2_step, y: y2_step });
+          if (trail.length > maxTrailLength) {
+            trail.shift();
+          }
+        }
+        
+        draw();
+        animationFrameId = requestAnimationFrame(animate);
+      }
+
+      function draw() {
+        if (!isSimulationActive) return;
+
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.3)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        let x1 = pivotX + r1 * Math.sin(a1);
+        let y1 = pivotY + r1 * Math.cos(a1);
+        let x2 = x1 + r2 * Math.sin(a2);
+        let y2 = y1 + r2 * Math.cos(a2);
+
+        if (trail.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(trail[0].x, trail[0].y);
+          for (let i = 1; i < trail.length; i++) {
+            const point = trail[i];
+            const prevPoint = trail[i-1];
+            const midX = (prevPoint.x + point.x) / 2;
+            const midY = (prevPoint.y + point.y) / 2;
+            ctx.quadraticCurveTo(prevPoint.x, prevPoint.y, midX, midY);
+          }
+          const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+          gradient.addColorStop(0, '#8A2BE2');
+          gradient.addColorStop(0.5, '#4F46E5');
+          gradient.addColorStop(1, '#EC4899');
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(pivotX, pivotY);
+        ctx.lineTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(pivotX, pivotY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(x1, y1, m1 / 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(236, 72, 153, 0.9)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(x2, y2, m2 / 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(139, 92, 246, 0.9)';
+        ctx.fill();
+      }
+
+      function setButterflyConditions() {
+        if (!isSimulationActive) return;
+        a1 = Math.PI;
+        a2 = Math.PI + 0.01;
+        a1_v = 0;
+        a2_v = 0;
+        trail = [];
+        isDragging = false;
+        draggedBob = null;
+        canvas.style.cursor = 'default';
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animate();
+      }
+
+      function getEventPosition(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+        const clientY = e.clientY ?? e.touches?.[0]?.clientY;
+        if (clientX === undefined || clientY === undefined) return null;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function handleDragStart(e) {
+        if (!isSimulationActive) return;
+        e.preventDefault();
+        const pos = getEventPosition(e);
+        if (!pos) return;
+        const x1 = pivotX + r1 * Math.sin(a1);
+        const y1 = pivotY + r1 * Math.cos(a1);
+        const x2 = x1 + r2 * Math.sin(a2);
+        const y2 = y1 + r2 * Math.cos(a2);
+        const grabRadius = Math.max(m1, m2) / 2 + 15;
+        const distToBob2 = Math.hypot(pos.x - x2, pos.y - y2);
+        const distToBob1 = Math.hypot(pos.x - x1, pos.y - y1);
+
+        if (distToBob2 < grabRadius) draggedBob = 2;
+        else if (distToBob1 < grabRadius) draggedBob = 1;
+
+        if (draggedBob) {
+          isDragging = true;
+          a1_v = 0;
+          a2_v = 0;
+          trail = [];
+        }
+      }
+
+      function handleDragMove(e) {
+        if (!isSimulationActive) return;
+        const pos = getEventPosition(e);
+        if (!pos) return;
+
+        if (!isDragging) {
+          const x1 = pivotX + r1 * Math.sin(a1);
+          const y1 = pivotY + r1 * Math.cos(a1);
+          const x2 = x1 + r2 * Math.sin(a2);
+          const y2 = y1 + r2 * Math.cos(a2);
+          const grabRadius = Math.max(m1, m2) / 2 + 15;
+          if (Math.hypot(pos.x - x1, pos.y - y1) < grabRadius || Math.hypot(pos.x - x2, pos.y - y2) < grabRadius) {
+            canvas.style.cursor = 'grab';
+          } else {
+            canvas.style.cursor = 'default';
+          }
+          return;
+        }
+
+        e.preventDefault();
+        canvas.style.cursor = 'grabbing';
+        
+        if (draggedBob === 1) {
+          const dx = pos.x - pivotX;
+          const dy = pos.y - pivotY;
+          a1 = Math.atan2(dx, dy);
+        } else if (draggedBob === 2) {
+          const x1 = pivotX + r1 * Math.sin(a1);
+          const y1 = pivotY + r1 * Math.cos(a1);
+          const dx = pos.x - x1;
+          const dy = pos.y - y1;
+          a2 = Math.atan2(dx, dy);
+        }
+        draw();
+      }
+
+      function handleDragEnd(e) {
+        if (!isSimulationActive || !isDragging) return;
+        e.preventDefault();
+        isDragging = false;
+        draggedBob = null;
+        canvas.style.cursor = 'grab';
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animate();
+      }
+
+      // --- Event Listeners ---
+      gravitySlider.addEventListener('input', updateParameters);
+      mass1Slider.addEventListener('input', updateParameters);
+      mass2Slider.addEventListener('input', updateParameters);
+      trailSlider.addEventListener('input', updateParameters);
+      resetButton.addEventListener('click', ()=>{ if(isSimulationActive) setup(); });
+      butterflyButton.addEventListener('click', ()=>{ if(isSimulationActive) setButterflyConditions(); });
+      window.addEventListener('resize', () => { if(isSimulationActive) setup(); });
+
+      canvas.addEventListener('mousedown', handleDragStart);
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      canvas.addEventListener('touchstart', handleDragStart, { passive: false });
+      window.addEventListener('touchmove', handleDragMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+      
+    })(); // End of IIFE wrapper
+  </script>
 
 </body>
 
